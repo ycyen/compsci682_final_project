@@ -16,7 +16,6 @@ import pickle
 
 
 class NeuralNetwork(nn.Module):
-
     def __init__(self):
         super(NeuralNetwork, self).__init__()
 
@@ -206,8 +205,14 @@ def train(model, start):
 
         # validate
         if iteration % 1000 == 0:
+            print("====================")
+            print("== Run validation ==")
+            print("====================")
             val_scores = test(model, num_iter=1)
             score_history.append(np.mean(np.array(val_scores)))
+            print("====================")
+            print("== End validation ==")
+            print("====================")
 
         # if iteration % 25000 == 0:
         #     torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
@@ -216,19 +221,22 @@ def train(model, start):
             torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
 
         if iteration % 1000 == 0:
-            with open('loss_hist/loss_history_%d.pickle' % (iteration), 'wb') as handle:
+            with open('loss_hist/loss_history_%d.pickle' % iteration, 'wb') as handle:
                 pickle.dump(loss_history, handle)
-            with open('score_hist/score_history_%d.pickle' % (iteration), 'wb') as handle:
+
+            with open('score_hist/score_history_%d.pickle' % iteration, 'wb') as handle:
                 pickle.dump(score_history, handle)
 
-        print("iteration:", iteration, "elapsed time:", time.time() - start, "epsilon:", epsilon, "action:",
-              action_index.cpu().detach().numpy(), "reward:", reward.numpy()[0][0], "Q max:",
-              np.max(output.cpu().detach().numpy()))
+        print("Iter{}:: timeUsed:{:<8.3}, epsilon:{:<8.3}, action:{}, "
+              "reward:{:4}, Q max:{:<8.3}".format(iteration,
+                                                  time.time() - start,
+                                                  epsilon,
+                                                  action_index.cpu().detach().numpy(),
+                                                  reward.numpy()[0][0],
+                                                  np.max(output.cpu().detach().numpy())))
 
 
-# test return list of scores of numbers
 def test(model, num_iter=1):
-    global cnt
     game_state = GameState()
 
     # initial action is do nothing
@@ -295,7 +303,7 @@ def main(mode):
         train(model, start)
     elif mode == 'keeptrain':
         model_path = 'current_model_2000000.pth'
-        if torch.cuda.is_available(): # put on GPU if CUDA is available
+        if torch.cuda.is_available():  # put on GPU if CUDA is available
             model = torch.load(model_path).eval()
         else:
             model = torch.load(model_path, map_location='cpu').eval()

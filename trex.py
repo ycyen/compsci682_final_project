@@ -348,18 +348,18 @@ class GameState:
         gameQuit = False
         self.playerDino = Dino(44, 47)
         self.new_ground = Ground(-1 * self.gamespeed)
-        scb = Scoreboard()
-        highsc = Scoreboard(width * 0.78)
+        self.scb = Scoreboard()
+        self.highsc = Scoreboard(width * 0.78)
         self.counter = 0
 
         self.cacti = pygame.sprite.Group()
         pteras = pygame.sprite.Group()
-        clouds = pygame.sprite.Group()
+        self.clouds = pygame.sprite.Group()
         self.last_obstacle = pygame.sprite.Group()
 
         Cactus.containers = self.cacti
         Ptera.containers = pteras
-        Cloud.containers = clouds
+        Cloud.containers = self.clouds
 
         retbutton_image, retbutton_rect = load_image('replay_button.png', 35, 31, -1)
         gameover_image, gameover_rect = load_image('game_over.png', 190, 11, -1)
@@ -376,9 +376,11 @@ class GameState:
 
 
     def frame_step(self, input_actions):
+        global high_score
         pygame.event.pump()
         reward = 1
         terminal = False
+        score_now = 0
 
         # input_actions[0] == 1: do nothing
         # input_actions[1] == 1: flap the bird
@@ -421,39 +423,39 @@ class GameState:
         #             self.last_obstacle.empty()
         #             self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
 
-        # if len(clouds) < 5 and random.randrange(0,300) == 10:
-        #     Cloud(width,random.randrange(height/5,height/2))
+        if len(self.clouds) < 5 and random.randrange(0,300) == 10:
+            Cloud(width,random.randrange(height/5,height/2))
 
         self.playerDino.update()
         self.cacti.update()
         # pteras.update()
-        # clouds.update()
+        self.clouds.update()
         self.new_ground.update()
-        # scb.update(self.playerDino.score)
-        # highsc.update(high_score)
+        self.scb.update(self.playerDino.score)
+        self.highsc.update(high_score)
 
-        # if pygame.display.get_surface() != None:
-        #     screen.fill(background_col)
-        #     self.new_ground.draw()
-        #     # clouds.draw(screen)
-        #     # scb.draw()
-        #     # if high_score != 0:
-        #     #     highsc.draw()
-        #     #     screen.blit(HI_image,HI_rect)
-        #     self.cacti.draw(screen)
-        #     # pteras.draw(screen)
-        #     self.playerDino.draw()
-        #
-        #     pygame.display.update()
-        # clock.tick(FPS)
+        if pygame.display.get_surface() != None:
+            screen.fill(background_col)
+            self.new_ground.draw()
+            self.clouds.draw(screen)
+            self.scb.draw()
+            if high_score != 0:
+                self.highsc.draw()
+                screen.blit(HI_image,HI_rect)
+            self.cacti.draw(screen)
+            # pteras.draw(screen)
+            self.playerDino.draw()
+
+            pygame.display.update()
+        clock.tick(FPS)
 
         screen.fill(background_col)
         self.new_ground.draw()
-        # clouds.draw(screen)
-        # scb.draw()
-        # if high_score != 0:
-        #     highsc.draw()
-        #     screen.blit(HI_image,HI_rect)
+        self.clouds.draw(screen)
+        self.scb.draw()
+        if high_score != 0:
+            self.highsc.draw()
+            screen.blit(HI_image,HI_rect)
         self.cacti.draw(screen)
         # pteras.draw(screen)
         self.playerDino.draw()
@@ -462,11 +464,12 @@ class GameState:
         if self.playerDino.isDead:
             # gameOver = True
             terminal = True
+            score_now = self.playerDino.score
             self.__init__()
             reward = -100
 
-            # if self.playerDino.score > high_score:
-            #     high_score = self.playerDino.score
+            if self.playerDino.score > high_score:
+                high_score = self.playerDino.score
 
         # if self.counter%700 == 699:
         #     self.new_ground.speed -= 1
@@ -492,11 +495,11 @@ class GameState:
         #                 if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
         #                     gameOver = False
         #                     gameplay()
-        #     highsc.update(high_score)
+        #     self.highsc.update(high_score)
         #     if pygame.display.get_surface() != None:
         #         disp_gameOver_msg(retbutton_image,gameover_image)
         #         if high_score != 0:
-        #             highsc.draw()
+        #             self.highsc.draw()
         #             screen.blit(HI_image,HI_rect)
         #         pygame.display.update()
         #     clock.tick(FPS)
@@ -505,7 +508,7 @@ class GameState:
         image_data = pygame.surfarray.array3d(pygame.display.get_surface())
         pygame.display.update()
         clock.tick(FPS)
-        return image_data, reward, terminal
+        return image_data, reward, terminal, score_now
 
 def gameplay():
     game_state = GameState()

@@ -6,6 +6,9 @@ import pygame
 import random
 from pygame import *
 
+display = False
+if not display:
+    os.environ["SDL_VIDEODRIVER"] = "dummy"
 pygame.init()
 
 # scr_size = (width,height) = (600,150)

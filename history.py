@@ -29,5 +29,5 @@ def draw_score(score_hist):
 if __name__ == "__main__":
     # loss_hist = load_pickle('loss_hist/loss_history_500.pickle')
     # draw_loss(loss_hist)
-    score_hist = load_pickle('score_hist/score_history_200.pickle')
+    score_hist = load_pickle('score_hist/score_history_600.pickle')
     draw_score(score_hist)

@@ -8,13 +8,15 @@ from pygame import *
 
 pygame.init()
 
-scr_size = (width,height) = (600,150)
+# scr_size = (width,height) = (600,150)
+scr_size = (width,height) = (450,150)
 FPS = 99999999999999999999#30
 gravity = 0.6
 
 black = (0,0,0)
 white = (255,255,255)
-background_col = (235,235,235)
+# background_col = (235,235,235)
+background_col = (0,0,0)
 
 high_score = 0
 
@@ -190,6 +192,7 @@ class Cactus(pygame.sprite.Sprite):
         self.rect.left = width + self.rect.width
         self.image = self.images[random.randrange(0,3)]
         self.movement = [-1*speed,0]
+        self.passed = False
 
     def draw(self):
         screen.blit(self.image,self.rect)
@@ -353,12 +356,12 @@ class GameState:
         self.counter = 0
 
         self.cacti = pygame.sprite.Group()
-        pteras = pygame.sprite.Group()
+        self.pteras = pygame.sprite.Group()
         self.clouds = pygame.sprite.Group()
         self.last_obstacle = pygame.sprite.Group()
 
         Cactus.containers = self.cacti
-        Ptera.containers = pteras
+        Ptera.containers = self.pteras
         Cloud.containers = self.clouds
 
         retbutton_image, retbutton_rect = load_image('replay_button.png', 35, 31, -1)
@@ -378,14 +381,16 @@ class GameState:
     def frame_step(self, input_actions):
         global high_score
         pygame.event.pump()
-        reward = 1
         terminal = False
         score_now = 0
+        # if do nothing reward is 1
+        reward = 1
 
         # input_actions[0] == 1: do nothing
-        # input_actions[1] == 1: flap the bird
+        # input_actions[1] == 1: press jump
         if input_actions[1] == 1:
-            reward = -5
+            # if jump but not over obstacle
+            reward = -3
             if self.playerDino.rect.bottom == int(0.98 * height):
                 self.playerDino.isJumping = True
                 if pygame.mixer.get_init() != None:
@@ -399,14 +404,32 @@ class GameState:
                 self.playerDino.isDead = True
                 if pygame.mixer.get_init() != None:
                     die_sound.play()
+            else:
+                def success_jump(dino, cacti):
+                    left, top, w, h = dino.rect
+                    right = left + w
+                    cleft, ctop, cw, ch = cacti.rect
+                    cright = cleft + cw
+                    # if top + h > ctop and (cleft <= left <= cright or cleft <= right <= cright):
+                    #     return True
+                    if left > cright and not c.passed:
+                        c.passed = True
+                        return True
+                    return False
 
-        # for p in pteras:
+                if success_jump(self.playerDino, c):
+                    reward = 8
+
+
+        # for p in self.pteras:
         #     p.movement[0] = -1*self.gamespeed
         #     if pygame.sprite.collide_mask(self.playerDino,p):
         #         self.playerDino.isDead = True
         #         if pygame.mixer.get_init() != None:
         #             die_sound.play()
 
+
+        # This block is for adding cacti
         if len(self.cacti) < 2:
             if len(self.cacti) == 0:
                 self.last_obstacle.empty()
@@ -417,7 +440,7 @@ class GameState:
                         self.last_obstacle.empty()
                         self.last_obstacle.add(Cactus(self.gamespeed, 40, 40))
 
-        # if len(pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
+        # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
         #     for l in self.last_obstacle:
         #         if l.rect.right < width*0.8:
         #             self.last_obstacle.empty()
@@ -426,9 +449,11 @@ class GameState:
         if len(self.clouds) < 5 and random.randrange(0,300) == 10:
             Cloud(width,random.randrange(height/5,height/2))
 
+
+        # List block will update every sprite
         self.playerDino.update()
         self.cacti.update()
-        # pteras.update()
+        # self.pteras.update()
         self.clouds.update()
         self.new_ground.update()
         self.scb.update(self.playerDino.score)
@@ -443,34 +468,26 @@ class GameState:
                 self.highsc.draw()
                 screen.blit(HI_image,HI_rect)
             self.cacti.draw(screen)
-            # pteras.draw(screen)
+            # self.pteras.draw(screen)
             self.playerDino.draw()
 
             pygame.display.update()
         clock.tick(FPS)
 
-        screen.fill(background_col)
-        self.new_ground.draw()
-        self.clouds.draw(screen)
-        self.scb.draw()
-        if high_score != 0:
-            self.highsc.draw()
-            screen.blit(HI_image,HI_rect)
-        self.cacti.draw(screen)
-        # pteras.draw(screen)
-        self.playerDino.draw()
-
-
+        # check if Dino dead
         if self.playerDino.isDead:
             # gameOver = True
             terminal = True
             score_now = self.playerDino.score
             self.__init__()
+
+            # reward is -100 is dead
             reward = -100
 
             if self.playerDino.score > high_score:
                 high_score = self.playerDino.score
 
+        # This one will increase speed
         # if self.counter%700 == 699:
         #     self.new_ground.speed -= 1
         #     self.gamespeed += 1

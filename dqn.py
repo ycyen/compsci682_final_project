@@ -25,6 +25,7 @@ class NeuralNetwork(nn.Module):
         self.final_epsilon = 0.0001
         self.initial_epsilon = 0.1
         self.number_of_iterations = 2000000
+        # self.number_of_iterations = 300
         self.replay_memory_size = 10000
         self.minibatch_size = 32
 
@@ -79,7 +80,6 @@ def resize_and_bgr2gray(image):
 def train(model, start):
     loss_history = []
     score_history = []
-
 
     # define Adam optimizer
     optimizer = optim.Adam(model.parameters(), lr=1e-6)
@@ -136,9 +136,9 @@ def train(model, start):
         image_data_1 = image_to_tensor(image_data_1)
         state_1 = torch.cat((state.squeeze(0)[1:, :, :], image_data_1)).unsqueeze(0)
 
-        if terminal:
-            score_history.append(score)
-            print("score: ", score)
+        # if terminal:
+        #     # score_history.append(score)
+        #     print("score: ", score)
 
         action = action.unsqueeze(0)
         reward = torch.from_numpy(np.array([reward], dtype=np.float32)).unsqueeze(0)
@@ -197,22 +197,30 @@ def train(model, start):
         state = state_1
         iteration += 1
 
-        if iteration % 25000 == 0:
+        # validate
+        if iteration % 1000 == 0:
+            val_score = test(model, once=True)
+            score_history.append(val_score)
+
+        # if iteration % 25000 == 0:
+        #     torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
+
+        if iteration % 100000 == 0:
             torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
 
-        if iteration % 100 == 0:
+        if iteration % 1000 == 0:
             with open('loss_hist/loss_history_%d.pickle' % (iteration), 'wb') as handle:
                 pickle.dump(loss_history, handle)
             with open('score_hist/score_history_%d.pickle' % (iteration), 'wb') as handle:
                 pickle.dump(score_history, handle)
-
 
         print("iteration:", iteration, "elapsed time:", time.time() - start, "epsilon:", epsilon, "action:",
               action_index.cpu().detach().numpy(), "reward:", reward.numpy()[0][0], "Q max:",
               np.max(output.cpu().detach().numpy()))
 
 
-def test(model):
+def test(model, once=False):
+    global cnt
     game_state = GameState()
 
     # initial action is do nothing
@@ -220,11 +228,10 @@ def test(model):
     action[0] = 1
     image_data, reward, terminal, _ = game_state.frame_step(action)
 
-    print("Before: ", image_data.shape)
     image_data = resize_and_bgr2gray(image_data)
-    print("After: ", image_data.shape)
     image_data = image_to_tensor(image_data)
     state = torch.cat((image_data, image_data, image_data, image_data)).unsqueeze(0)
+
 
     while True:
         # get output from the neural network
@@ -243,7 +250,6 @@ def test(model):
         # get next state
         image_data_1, reward, terminal, score = game_state.frame_step(action)
         image_data_1 = resize_and_bgr2gray(image_data_1)
-
         image_data_1 = image_to_tensor(image_data_1)
         state_1 = torch.cat((state.squeeze(0)[1:, :, :], image_data_1)).unsqueeze(0)
 
@@ -252,15 +258,18 @@ def test(model):
 
         if terminal:
             print("score: ", score)
-
+            if once:
+                break
+    return score
 
 
 def main(mode):
     if mode == 'test':
+        model_path = 'current_model_2000000.pth'
         if torch.cuda.is_available():
-            model = torch.load('pretrained_model/current_model_2000000.pth').eval()
+            model = torch.load(model_path).eval()
         else:
-            model = torch.load('pretrained_model/current_model_2000000.pth', map_location='cpu').eval()
+            model = torch.load(model_path, map_location='cpu').eval()
         if torch.cuda.is_available():  # put on GPU if CUDA is available
             model = model.cuda()
         test(model)
@@ -274,13 +283,14 @@ def main(mode):
         start = time.time()
         train(model, start)
     elif mode == 'keeptrain':
+        model_path = 'current_model_2000000.pth'
         if torch.cuda.is_available(): # put on GPU if CUDA is available
-            model = torch.load('pretrained_model/current_model_2000000.pth').eval()
+            model = torch.load(model_path).eval()
         else:
-            model = torch.load('pretrained_model/current_model_2000000.pth', map_location='cpu').eval()
+            model = torch.load(model_path, map_location='cpu').eval()
         if torch.cuda.is_available():
             model = model.cuda()
-        model.conv1.weight.data.fill_(0.01)
+        # model.conv1.weight.data.fill_(0.01)
         start = time.time()
         train(model, start)
 

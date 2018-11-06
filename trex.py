@@ -7,6 +7,8 @@ import random
 from pygame import *
 
 display = False
+sound = False
+
 if not display:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 pygame.init()
@@ -27,9 +29,10 @@ screen = pygame.display.set_mode(scr_size)
 clock = pygame.time.Clock()
 pygame.display.set_caption("T-Rex Rush")
 
-jump_sound = pygame.mixer.Sound('sprites/jump.wav')
-die_sound = pygame.mixer.Sound('sprites/die.wav')
-checkPoint_sound = pygame.mixer.Sound('sprites/checkPoint.wav')
+if sound:
+    jump_sound = pygame.mixer.Sound('sprites/jump.wav')
+    die_sound = pygame.mixer.Sound('sprites/die.wav')
+    checkPoint_sound = pygame.mixer.Sound('sprites/checkPoint.wav')
 
 def load_image(
     name,
@@ -146,6 +149,7 @@ class Dino():
             self.isJumping = False
 
     def update(self):
+        global sound
         if self.isJumping:
             self.movement[1] = self.movement[1] + gravity
 
@@ -182,7 +186,7 @@ class Dino():
         if not self.isDead and self.counter % 7 == 6 and self.isBlinking == False:
             self.score += 1
             if self.score % 100 == 0 and self.score != 0:
-                if pygame.mixer.get_init() != None:
+                if sound and pygame.mixer.get_init() != None:
                     checkPoint_sound.play()
 
         self.counter = (self.counter + 1)
@@ -382,7 +386,7 @@ class GameState:
 
 
     def frame_step(self, input_actions):
-        global high_score
+        global high_score, sound
         pygame.event.pump()
         terminal = False
         score_now = 0
@@ -397,7 +401,8 @@ class GameState:
             if self.playerDino.rect.bottom == int(0.98 * height):
                 self.playerDino.isJumping = True
                 if pygame.mixer.get_init() != None:
-                    # jump_sound.play()
+                    if sound:
+                        jump_sound.play()
                     self.playerDino.movement[1] = -1 * self.playerDino.jumpSpeed
 
 
@@ -405,7 +410,7 @@ class GameState:
             c.movement[0] = -1*self.gamespeed
             if pygame.sprite.collide_mask(self.playerDino,c):
                 self.playerDino.isDead = True
-                if pygame.mixer.get_init() != None:
+                if sound and pygame.mixer.get_init() != None:
                     die_sound.play()
             else:
                 def success_jump(dino, cacti):
@@ -428,7 +433,7 @@ class GameState:
         #     p.movement[0] = -1*self.gamespeed
         #     if pygame.sprite.collide_mask(self.playerDino,p):
         #         self.playerDino.isDead = True
-        #         if pygame.mixer.get_init() != None:
+        #         if sound and pygame.mixer.get_init() != None:
         #             die_sound.play()
 
 

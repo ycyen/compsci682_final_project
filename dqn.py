@@ -206,8 +206,8 @@ def train(model, start):
 
         # validate
         if iteration % 1000 == 0:
-            val_score = test(model, once=True)
-            score_history.append(val_score)
+            val_scores = test(model, num_iter=1)
+            score_history.append(np.mean(np.array(val_scores)))
 
         # if iteration % 25000 == 0:
         #     torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
@@ -226,7 +226,8 @@ def train(model, start):
               np.max(output.cpu().detach().numpy()))
 
 
-def test(model, once=False):
+# test return list of scores of numbers
+def test(model, num_iter=1):
     global cnt
     game_state = GameState()
 
@@ -239,7 +240,8 @@ def test(model, once=False):
     image_data = image_to_tensor(image_data)
     state = torch.cat((image_data, image_data, image_data, image_data)).unsqueeze(0)
 
-
+    iteration = 1
+    scores = []
     while True:
         # get output from the neural network
         output = model(state)[0]
@@ -264,10 +266,12 @@ def test(model, once=False):
         state = state_1
 
         if terminal:
-            print("score: ", score)
-            if once:
-                break
-    return score
+            print("Test iteration {}, score: {}".format(iteration, score))
+            scores.append(score)
+            iteration += 1
+        if iteration > num_iter:
+            break
+    return scores
 
 
 def main(mode):
@@ -279,7 +283,7 @@ def main(mode):
             model = torch.load(model_path, map_location='cpu').eval()
         if torch.cuda.is_available():  # put on GPU if CUDA is available
             model = model.cuda()
-        test(model)
+        test(model, float('inf'))
     elif mode == 'train':
         if not os.path.exists('pretrained_model/'):
             os.mkdir('pretrained_model/')

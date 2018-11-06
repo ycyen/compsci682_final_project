@@ -78,6 +78,13 @@ def resize_and_bgr2gray(image):
 
 
 def train(model, start):
+    if not os.path.exists('loss_hist'):
+        os.makedirs('loss_hist')
+    if not os.path.exists('score_hist'):
+        os.makedirs('score_hist')
+    if not os.path.exists('pretrained_model'):
+        os.makedirs('pretrained_model')
+
     loss_history = []
     score_history = []
 

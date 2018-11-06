@@ -78,6 +78,7 @@ def resize_and_bgr2gray(image):
 
 def train(model, start):
     loss_history = []
+    score_history = []
 
 
     # define Adam optimizer
@@ -136,6 +137,7 @@ def train(model, start):
         state_1 = torch.cat((state.squeeze(0)[1:, :, :], image_data_1)).unsqueeze(0)
 
         if terminal:
+            score_history.append(score)
             print("score: ", score)
 
         action = action.unsqueeze(0)
@@ -185,7 +187,7 @@ def train(model, start):
 
         # calculate loss
         loss = criterion(q_value, y_batch)
-        loss_history.append(loss)
+        loss_history.append(loss.cpu().detach().numpy())
 
         # do backward pass
         loss.backward()
@@ -201,6 +203,8 @@ def train(model, start):
         if iteration % 100 == 0:
             with open('loss_hist/loss_history_%d.pickle' % (iteration), 'wb') as handle:
                 pickle.dump(loss_history, handle)
+            with open('score_hist/score_history_%d.pickle' % (iteration), 'wb') as handle:
+                pickle.dump(score_history, handle)
 
 
         print("iteration:", iteration, "elapsed time:", time.time() - start, "epsilon:", epsilon, "action:",

@@ -15,24 +15,21 @@ python dqn.py keeptrain
 python dqn.py test
 ```
 
-## tmux mini tutorial
-* create a tmux window
+## Tmux - mini tutorial
+##### create a tmux window
 ```
 tmux
 ```
-
-* detach from a tmux window (window still running in the background)
+#### detach from a tmux window (window still running in the background)
 ```
 ctrl + B
 d
 ```
-
-* check current windows running in the background
+#### check current windows running in the background
 ```
 tmux ls
 ```
-
-* return to a window
+#### return to a window
 ```
 tmux a
 ```

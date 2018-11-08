@@ -6,7 +6,7 @@ import pygame
 import random
 from pygame import *
 
-display = True
+display = False
 sound = False
 
 if not display:
@@ -123,8 +123,8 @@ class Dino():
     def __init__(self,sizex=-1,sizey=-1):
         self.images,self.rect = load_sprite_sheet('dino.png',5,1,sizex,sizey,-1)
         self.images1,self.rect1 = load_sprite_sheet('dino_ducking.png',2,1,59,sizey,-1)
-        # self.rect.bottom = int(0.98*height)
-        self.rect.bottom = 107
+        self.rect.bottom = int(0.98*height)
+        # self.rect.bottom = 107
         self.rect.left = width/15
         self.image = self.images[0]
         self.index = 0
@@ -151,8 +151,8 @@ class Dino():
     def update(self):
         global sound
         if self.isJumping:
-            # self.movement[1] = self.movement[1] + gravity
-            self.movement[1] = 0
+            self.movement[1] = self.movement[1] + gravity
+            # self.movement[1] = 0
 
         if self.isJumping:
             self.index = 0
@@ -366,7 +366,6 @@ class GameState:
         self.cacti = pygame.sprite.Group()
         self.pteras = pygame.sprite.Group()
         self.clouds = pygame.sprite.Group()
-        self.last_obstacle = pygame.sprite.Group()
 
         Cactus.containers = self.cacti
         Ptera.containers = self.pteras
@@ -438,15 +437,15 @@ class GameState:
 
 
         # This block is for adding cacti
-        if len(self.cacti) < 2:
+        if len(self.cacti) < 1:
             if len(self.cacti) == 0:
-                self.last_obstacle.empty()
-                self.last_obstacle.add(Cactus(self.gamespeed,40,40))
-            else:
-                for l in self.last_obstacle:
-                    if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
-                        self.last_obstacle.empty()
-                        self.last_obstacle.add(Cactus(self.gamespeed, 40, 40))
+                self.cacti.empty()
+                self.cacti.add(Cactus(self.gamespeed,40,40))
+            # else:
+            #     for l in self.last_obstacle:
+            #         if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
+            #             self.last_obstacle.empty()
+            #             self.last_obstacle.add(Cactus(self.gamespeed, 40, 40))
 
         # For debug cacti
         if debug:

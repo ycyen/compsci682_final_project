@@ -360,7 +360,6 @@ class GameState:
         self.scb = Scoreboard()
         self.highsc = Scoreboard(width * 0.78)
         self.counter = 0
-        self.score_now = 0
 
         self.cacti = pygame.sprite.Group()
         self.pteras = pygame.sprite.Group()
@@ -385,7 +384,7 @@ class GameState:
         HI_rect.left = width * 0.73
 
 
-    def frame_step(self, input_actions):
+    def frame_step(self, input_actions, debug=False):
         global high_score, sound
         pygame.event.pump()
         terminal = False
@@ -447,6 +446,11 @@ class GameState:
                         self.last_obstacle.empty()
                         self.last_obstacle.add(Cactus(self.gamespeed, 40, 40))
 
+        # For debug cacti
+        if debug:
+            for c in self.cacti:
+                print(c.rect)
+
         # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
         #     for l in self.last_obstacle:
         #         if l.rect.right < width*0.8:
@@ -481,19 +485,14 @@ class GameState:
             pygame.display.update()
         clock.tick(FPS)
 
+        cur_score = self.playerDino.score
         # check if Dino dead
         if self.playerDino.isDead:
             # gameOver = True
             terminal = True
-            self.score_now = self.playerDino.score
-            print("Game Over: \n  score: {}".format(self.score_now))
-            print("================================\n")
-
             self.__init__()
-
             # reward is -100 is dead
             reward = -100
-
             if self.playerDino.score > high_score:
                 high_score = self.playerDino.score
 
@@ -535,7 +534,7 @@ class GameState:
         image_data = pygame.surfarray.array3d(pygame.display.get_surface())
         pygame.display.update()
         clock.tick(FPS)
-        return image_data, reward, terminal, self.score_now
+        return image_data, reward, terminal, cur_score
 
 def gameplay():
     game_state = GameState()
@@ -554,7 +553,6 @@ def gameplay():
         action = [0, 0]
         action[0] = 1
         game_state.frame_step(action)
-
 
     # startMenu = False
     # gameOver = False

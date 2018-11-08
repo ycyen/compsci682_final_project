@@ -102,7 +102,7 @@ def train(model, start):
     # initial action is do nothing
     action = torch.zeros([model.number_of_actions], dtype=torch.float32)
     action[0] = 1
-    image_data, reward, terminal, _ = game_state.frame_step(action)
+    image_data, reward, terminal, _ = game_state.frame_step(action, debug=True)
     image_data = resize_and_bgr2gray(image_data)
     image_data = image_to_tensor(image_data)
     state = torch.cat((image_data, image_data, image_data, image_data)).unsqueeze(0)
@@ -137,7 +137,7 @@ def train(model, start):
         action[action_index] = 1
 
         # get next state and reward
-        image_data_1, reward, terminal, score = game_state.frame_step(action)
+        image_data_1, reward, terminal, score = game_state.frame_step(action, debug=True)
         image_data_1 = resize_and_bgr2gray(image_data_1)
         image_data_1 = image_to_tensor(image_data_1)
         state_1 = torch.cat((state.squeeze(0)[1:, :, :], image_data_1)).unsqueeze(0)
@@ -228,11 +228,12 @@ def train(model, start):
                 pickle.dump(score_history, handle)
 
         print("Iter{}:: timeUsed:{:<8.3}, epsilon:{:<8.3}, action:{}, "
-              "reward:{:4}, Q max:{:<8.3}".format(iteration,
+              "reward:{:4}, score:{:4}, Q max:{:<8.3}".format(iteration,
                                                   time.time() - start,
                                                   epsilon,
                                                   action_index.cpu().detach().numpy(),
                                                   reward.numpy()[0][0],
+                                                  score,
                                                   np.max(output.cpu().detach().numpy())))
 
 
@@ -250,6 +251,7 @@ def test(model, num_iter=1):
 
     iteration = 1
     scores = []
+    pre_score = 0
     while True:
         # get output from the neural network
         output = model(state)[0]
@@ -274,11 +276,12 @@ def test(model, num_iter=1):
         state = state_1
 
         if terminal:
-            print("Test iteration {}, score: {}".format(iteration, score))
-            scores.append(score)
+            print("Test iteration {}, score: {}".format(iteration, pre_score))
+            scores.append(pre_score)
             iteration += 1
         if iteration > num_iter:
             break
+        pre_score = score
     return scores
 
 

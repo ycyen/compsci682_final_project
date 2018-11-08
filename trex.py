@@ -13,8 +13,7 @@ if not display:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 pygame.init()
 
-# scr_size = (width,height) = (600,150)
-scr_size = (width,height) = (450,150)
+scr_size = (width,height) = (600,150)
 FPS = 99999999999999999999#30
 gravity = 0.6
 

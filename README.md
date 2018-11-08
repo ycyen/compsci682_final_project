@@ -7,3 +7,10 @@ cd compsci682_final_project
 chmod +x setup_gloud_u16.04.sh
 ./setup_gloud_u16.04.sh
 ```
+
+## Usage
+```
+python dqn.py train
+python dqn.py keeptrain
+python dqn.py test
+```

@@ -6,7 +6,7 @@ import pygame
 import random
 from pygame import *
 
-display = False
+display = True
 sound = False
 
 if not display:
@@ -19,8 +19,8 @@ gravity = 0.6
 
 black = (0,0,0)
 white = (255,255,255)
-# background_col = (235,235,235)
-background_col = (0,0,0)
+background_col = (235,235,235)
+# background_col = (0,0,0)
 
 high_score = 0
 
@@ -448,8 +448,9 @@ class GameState:
 
         # For debug cacti
         if debug:
+            print("Dino: ", self.playerDino.rect)
             for c in self.cacti:
-                print(c.rect)
+                print("cacti: ", c.rect)
 
         # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
         #     for l in self.last_obstacle:

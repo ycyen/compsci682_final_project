@@ -71,7 +71,7 @@ def image_to_tensor(image):
 def resize_and_bgr2gray(image):
     image = image[0:600, 0:150]
     image_data = cv2.cvtColor(cv2.resize(image, (84, 84)), cv2.COLOR_BGR2GRAY)
-    image_data[image_data > 0] = 255
+    # image_data[image_data > 0] = 255
     image_data = np.reshape(image_data, (84, 84, 1))
     return image_data
 

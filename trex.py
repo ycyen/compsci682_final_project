@@ -360,6 +360,7 @@ class GameState:
         self.scb = Scoreboard()
         self.highsc = Scoreboard(width * 0.78)
         self.counter = 0
+        self.score_now = 0
 
         self.cacti = pygame.sprite.Group()
         self.pteras = pygame.sprite.Group()
@@ -388,7 +389,6 @@ class GameState:
         global high_score, sound
         pygame.event.pump()
         terminal = False
-        score_now = 0
         # if do nothing reward is 1
         reward = 1
 
@@ -485,7 +485,10 @@ class GameState:
         if self.playerDino.isDead:
             # gameOver = True
             terminal = True
-            score_now = self.playerDino.score
+            self.score_now = self.playerDino.score
+            print("Game Over: \n  score: {}".format(self.score_now))
+            print("================================\n")
+
             self.__init__()
 
             # reward is -100 is dead
@@ -532,7 +535,7 @@ class GameState:
         image_data = pygame.surfarray.array3d(pygame.display.get_surface())
         pygame.display.update()
         clock.tick(FPS)
-        return image_data, reward, terminal, score_now
+        return image_data, reward, terminal, self.score_now
 
 def gameplay():
     game_state = GameState()

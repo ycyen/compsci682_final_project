@@ -4,8 +4,8 @@
 ```
 git clone https://github.com/ycyen/compsci682_final_project.git
 cd compsci682_final_project
-chmod +x setup_gloud_u16.04.sh
-./setup_gloud_u16.04.sh
+chmod +x setup_gcloud_u16.04.sh
+./setup_gcloud_u16.04.sh
 ```
 
 ## Usage

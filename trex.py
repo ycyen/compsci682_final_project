@@ -123,7 +123,8 @@ class Dino():
     def __init__(self,sizex=-1,sizey=-1):
         self.images,self.rect = load_sprite_sheet('dino.png',5,1,sizex,sizey,-1)
         self.images1,self.rect1 = load_sprite_sheet('dino_ducking.png',2,1,59,sizey,-1)
-        self.rect.bottom = int(0.98*height)
+        # self.rect.bottom = int(0.98*height)
+        self.rect.bottom = 107
         self.rect.left = width/15
         self.image = self.images[0]
         self.index = 0
@@ -150,7 +151,8 @@ class Dino():
     def update(self):
         global sound
         if self.isJumping:
-            self.movement[1] = self.movement[1] + gravity
+            # self.movement[1] = self.movement[1] + gravity
+            self.movement[1] = 0
 
         if self.isJumping:
             self.index = 0

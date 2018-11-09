@@ -5,7 +5,7 @@ import random
 from pygame import *
 
 # display option
-DISPLAY = True
+DISPLAY = False
 TXT_DISPLAY = True
 
 # included element

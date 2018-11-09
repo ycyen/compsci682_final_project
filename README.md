@@ -9,10 +9,15 @@ chmod +x setup_gcloud_u16.04.sh
 ```
 
 ## Usage
+### Training
 ```
 python dqn.py train
 python dqn.py keeptrain
-python dqn.py test
+```
+
+### Testing
+```
+python dqn.py test -m <path to model you want to test>
 ```
 
 ## Tmux - mini tutorial

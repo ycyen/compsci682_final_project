@@ -469,10 +469,6 @@ class GameState:
 
 def gameplay():
     game_state = GameState()
-    action = [0,0]
-    action[0] = 1
-    image_data, reward, terminal = game_state.frame_step(action)
-
     while True:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:  # press something

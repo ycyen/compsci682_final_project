@@ -11,6 +11,7 @@ TXT_DISPLAY = False
 # included element
 CLOUD = True
 SCOREBOARD = True
+GROUND = True
 PTERA = False
 HIGHSCOREBOARD = False
 
@@ -311,7 +312,8 @@ class GameState:
         global high_score
         self.gamespeed = 4
         self.playerDino = Dino(44, 47)
-        self.new_ground = Ground(-1 * self.gamespeed)
+        if GROUND:
+            self.new_ground = Ground(-1 * self.gamespeed)
         if SCOREBOARD:
             self.scb = Scoreboard()
         if HIGHSCOREBOARD:
@@ -415,7 +417,8 @@ class GameState:
             self.pteras.update()
         if CLOUD:
             self.clouds.update()
-        self.new_ground.update()
+        if GROUND:
+            self.new_ground.update()
         if SCOREBOARD:
             self.scb.update(self.playerDino.score)
         if HIGHSCOREBOARD:
@@ -423,7 +426,8 @@ class GameState:
 
         if pygame.display.get_surface() != None:
             screen.fill(background_col)
-            self.new_ground.draw()
+            if GROUND:
+                self.new_ground.draw()
             if CLOUD:
                 self.clouds.draw(screen)
             if SCOREBOARD:
@@ -451,7 +455,8 @@ class GameState:
         if SPEEDUP:
             # This one will increase speed
             if self.counter%700 == 699:
-                self.new_ground.speed -= 1
+                if GROUND:
+                    self.new_ground.speed -= 1
                 self.gamespeed += 1
 
         self.counter = (self.counter + 1)

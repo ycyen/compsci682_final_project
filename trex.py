@@ -5,7 +5,7 @@ import random
 from pygame import *
 
 # display option
-DISPLAY = False
+DISPLAY = True
 TXT_DISPLAY = True
 
 # included element
@@ -386,8 +386,8 @@ class GameState:
                 if pygame.sprite.collide_mask(self.playerDino,p):
                     self.playerDino.isDead = True
 
-        # This block is for adding cacti
-        if len(self.cacti) == 0:
+        # Adding single cacti
+        if len(self.cacti) == 0 and random.randrange(0,50) == 10:
             self.cacti.empty()
             self.cacti.add(Cactus(self.gamespeed, 40, 40))
 

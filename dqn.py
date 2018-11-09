@@ -7,12 +7,10 @@ import torch.nn as nn
 import torch.optim as optim
 
 import time
-
-from trex import GameState
-
 import os
 import sys
 import pickle
+from trex import GameState
 
 
 class NeuralNetwork(nn.Module):
@@ -249,13 +247,15 @@ def test(model, num_iter=1):
     image_data = image_to_tensor(image_data)
     state = torch.cat((image_data, image_data, image_data, image_data)).unsqueeze(0)
 
-    iteration = 1
+    game_cnt = 1
     scores = []
     pre_score = 0
+    iteration = 0
     while True:
+        iteration += 1
+
         # get output from the neural network
         output = model(state)[0]
-
         action = torch.zeros([model.number_of_actions], dtype=torch.float32)
         if torch.cuda.is_available():  # put on GPU if CUDA is available
             action = action.cuda()
@@ -274,12 +274,15 @@ def test(model, num_iter=1):
 
         # set state to be state_1
         state = state_1
+        if iteration % 10 == 0:
+            print("Test:: itr: {}, score: {}".format(iteration, score))
 
         if terminal:
-            print("Test iteration {}, score: {}".format(iteration, pre_score))
+            iteration = 0
             scores.append(pre_score)
-            iteration += 1
-        if iteration > num_iter:
+            game_cnt += 1
+            print("Test:: End of Game {}, score: {}\n".format(game_cnt, pre_score))
+        if game_cnt > num_iter:
             break
         pre_score = score
     return scores
@@ -287,7 +290,7 @@ def test(model, num_iter=1):
 
 def main(mode):
     if mode == 'test':
-        model_path = 'current_model_2000000.pth'
+        model_path = 'my_current_model_200000.pth'
         if torch.cuda.is_available():
             model = torch.load(model_path).eval()
         else:

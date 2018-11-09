@@ -5,14 +5,15 @@ import random
 from pygame import *
 
 # display option
-DISPLAY = False
+DISPLAY = True
 TXT_DISPLAY = True
 
 # included element
 CLOUD = False
 SCOREBOARD = False
 GROUND = False
-PTERA = False
+PTERA = True
+CACTUS = False
 HIGHSCOREBOARD = False
 
 # game setting
@@ -24,9 +25,11 @@ SPEEDUP = False
 # JUMP_REWARD = -1
 # DEAD_REWARD = -10
 
-SUCCESS_REWARD = 10
+SUCCESS_JUMP = 10
+SUCCESS_DUCKING = 10
 ALIVE_REWARD = 1
 JUMP_REWARD = 0
+DUCKING_REWARD = 0
 DEAD_REWARD = -10
 
 
@@ -232,6 +235,7 @@ class Ptera(pygame.sprite.Sprite):
         self.movement = [-1*speed,0]
         self.index = 0
         self.counter = 0
+        self.passed = False
 
     def draw(self):
         screen.blit(self.image,self.rect)
@@ -331,8 +335,8 @@ class GameState:
             self.pteras = pygame.sprite.Group()
         if CLOUD:
             self.clouds = pygame.sprite.Group()
-
-        Cactus.containers = self.cacti
+        if CACTUS:
+            Cactus.containers = self.cacti
         if PTERA:
             Ptera.containers = self.pteras
         if CLOUD:
@@ -355,8 +359,12 @@ class GameState:
         # if do nothing reward is 1
         reward = ALIVE_REWARD
 
+        # set ptera isDucking to False
+        self.playerDino.isDucking = False
+
         # input_actions[0] == 1: do nothing
         # input_actions[1] == 1: press jump
+        # input_actions[2] == 1: ducking
         if input_actions[1] == 1:
             # if jump but not over obstacle
             reward = JUMP_REWARD
@@ -364,42 +372,70 @@ class GameState:
                 self.playerDino.isJumping = True
                 self.playerDino.movement[1] = -1 * self.playerDino.jumpSpeed
 
-        for c in self.cacti:
-            c.movement[0] = -1*self.gamespeed
-            if pygame.sprite.collide_mask(self.playerDino,c):
-                self.playerDino.isDead = True
-            else:
-                def success_jump(dino, cacti):
-                    left, top, w, h = dino.rect
-                    cleft, ctop, cw, ch = cacti.rect
-                    cright = cleft + cw
-                    if left > cright and not c.passed:
-                        c.passed = True
-                        return True
-                    return False
-                if success_jump(self.playerDino, c):
-                    reward = SUCCESS_REWARD
+        if input_actions[2] == 1:
+            reward = DUCKING_REWARD
+            if not (self.playerDino.isJumping and self.playerDino.isDead):
+                self.playerDino.isDucking = True
+
+
+        if CACTUS:
+            for c in self.cacti:
+                c.movement[0] = -1*self.gamespeed
+                if pygame.sprite.collide_mask(self.playerDino,c):
+                    self.playerDino.isDead = True
+                else:
+                    def success_jump_c(dino, cacti):
+                        left, top, w, h = dino.rect
+                        cleft, ctop, cw, ch = cacti.rect
+                        cright = cleft + cw
+                        if left > cright and not c.passed:
+                            c.passed = True
+                            return True
+                        return False
+                    if success_jump_c(self.playerDino, c):
+                        reward = SUCCESS_JUMP
 
         if PTERA:
             for p in self.pteras:
                 p.movement[0] = -1*self.gamespeed
                 if pygame.sprite.collide_mask(self.playerDino,p):
                     self.playerDino.isDead = True
+                else:
+                    def success_duck_p(dino, ptera):
+                        left, top, w, h = dino.rect
+                        pleft, ptop, pw, ph = ptera.rect
+                        pright = pleft + pw
+                        if left > pright and not p.passed:
+                            p.passed = True
+                            return True
+                        return False
+                    def success_jump_p(dino, ptera):
+                        left, top, w, h = dino.rect
+                        pleft, ptop, pw, ph = ptera.rect
+                        pright = pleft + pw
+                        if left > pright and not p.passed:
+                            p.passed = True
+                            return True
+                        return False
+                    if success_duck_p(self.playerDino, p):
+                        reward = SUCCESS_DUCKING
+                    if success_jump_p(self.playerDino, p):
+                        reward = SUCCESS_JUMP
 
         # # Adding single cacti
         # if len(self.cacti) == 0 and random.randrange(0,50) == 10:
         #     self.cacti.empty()
         #     self.cacti.add(Cactus(self.gamespeed, 40, 40))
-
-        if len(self.cacti) < 2:
-            if len(self.cacti) == 0:
-                self.cacti.empty()
-                self.cacti.add(Cactus(self.gamespeed,40,40))
-            else:
-                for c in self.cacti:
-                    if c.rect.right < width*0.7 and random.randrange(0,50) == 10:
-                        # self.cacti.empty()
-                        self.cacti.add(Cactus(self.gamespeed, 40, 40))
+        if CACTUS:
+            if len(self.cacti) < 2:
+                if len(self.cacti) == 0:
+                    self.cacti.empty()
+                    self.cacti.add(Cactus(self.gamespeed,40,40))
+                else:
+                    for c in self.cacti:
+                        if c.rect.right < width*0.7 and random.randrange(0,50) == 10:
+                            # self.cacti.empty()
+                            self.cacti.add(Cactus(self.gamespeed, 40, 40))
 
         # For debug cacti
         if TXT_DISPLAY:
@@ -409,11 +445,24 @@ class GameState:
 
         if PTERA:
             # TODO: check if this work ...
-            if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
-                for l in self.last_obstacle:
-                    if l.rect.right < width*0.8:
-                        self.last_obstacle.empty()
-                        self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
+            # if len(self.pteras) == 0 and random.randrange(0,50) == 10 and self.counter > 10:
+            # if len(self.pteras) == 0 and random.randrange(0, 20) == 10:
+            #     self.pteras.add(Ptera(self.gamespeed, 46, 40))
+            if len(self.pteras) < 2:
+                if len(self.pteras) == 0:
+                    self.pteras.empty()
+                    self.pteras.add(Ptera(self.gamespeed,46,40))
+                else:
+                    for p in self.pteras:
+                        if p.rect.right < width*0.7 and random.randrange(0,50) == 10:
+                            # self.cacti.empty()
+                            self.pteras.add(Ptera(self.gamespeed, 46, 40))
+
+        # For debug cacti
+        if TXT_DISPLAY:
+            # print("Dino: ", self.playerDino.rect)
+            for p in self.pteras:
+                print("ptera: ", p.rect)
 
         if CLOUD:
             if len(self.clouds) < 5 and random.randrange(0,300) == 10:
@@ -422,7 +471,8 @@ class GameState:
 
         # List block will update every sprite
         self.playerDino.update()
-        self.cacti.update()
+        if CACTUS:
+            self.cacti.update()
         if PTERA:
             self.pteras.update()
         if CLOUD:
@@ -445,7 +495,8 @@ class GameState:
             if HIGHSCOREBOARD and high_score != 0:
                     self.highsc.draw()
                     screen.blit(HI_image,HI_rect)
-            self.cacti.draw(screen)
+            if CACTUS:
+                self.cacti.draw(screen)
             if PTERA:
                 self.pteras.draw(screen)
             self.playerDino.draw()

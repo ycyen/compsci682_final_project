@@ -34,7 +34,7 @@ class NeuralNetwork(nn.Module):
     def __init__(self):
         super(NeuralNetwork, self).__init__()
 
-        self.number_of_actions = 2
+        self.number_of_actions = 3
         self.gamma = 0.99
         self.final_epsilon = 0.0001
         self.initial_epsilon = 0.1

@@ -18,6 +18,7 @@ from utils import save_image
 VALID_PERIOD = 1000
 SAVE_MODEL_PERIOD = 100000
 SAVE_HISTORY_PERIOD = 1000
+TEST_PRINT_PERIOD = 50
 TEST_UPPER_SCORE = 10000
 X_CROP_SIZE = 450
 
@@ -293,7 +294,7 @@ def test(model, num_iter=1):
 
         # set state to be state_1
         state = state_1
-        if iteration % 50 == 0:
+        if iteration % TEST_PRINT_PERIOD == 0:
             print("Test:: itr: {}, score: {}".format(iteration, score))
 
         if terminal or iteration > TEST_UPPER_SCORE:

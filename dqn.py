@@ -14,6 +14,20 @@ import argparse
 from trex import GameState
 from utils import save_image
 
+# const
+VALID_PERIOD = 1000
+SAVE_MODEL_PERIOD = 100000
+SAVE_HISTORY_PERIOD = 1000
+TEST_UPPER_SCORE = 1000000
+X_CROP_SIZE = 450
+
+
+BWIMG = True
+SAVE_DEBUG_IMAGE = False
+
+
+best_val = 0
+best_itr = -1
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
@@ -69,15 +83,18 @@ def image_to_tensor(image):
 
 def resize_and_bgr2gray(image):
     # image = image[0:600, 0:150]  # original
-    image = image[0:450, 0:150]  # only use a portion of it
+    image = image[0:X_CROP_SIZE, 0:150]  # only use a portion of it
     image_data = cv2.cvtColor(cv2.resize(image, (84, 84)), cv2.COLOR_BGR2GRAY)
-    # image_data[image_data > 0] = 255
-    # save_image(image_data, 'tmp.png')
+    if BWIMG:
+        image_data[image_data > 0] = 255
+    if SAVE_DEBUG_IMAGE:
+        save_image(image_data, 'tmp.png')
     image_data = np.reshape(image_data, (84, 84, 1))
     return image_data
 
 
 def train(model):
+    global best_val, best_itr
     if not os.path.exists('loss_hist'):
         os.makedirs('loss_hist')
     if not os.path.exists('score_hist'):
@@ -85,6 +102,8 @@ def train(model):
     if not os.path.exists('pretrained_model'):
         os.makedirs('pretrained_model')
 
+    best_val = 0
+    best_itr = -1
     loss_history = []
     score_history = []
 
@@ -200,24 +219,30 @@ def train(model):
         iteration += 1
 
         # validate
-        if iteration % 1000 == 0:
+        if iteration % VALID_PERIOD == 0:
             print("====================")
             print("== Run validation ==")
             print("====================")
             val_scores = test(model, num_iter=1)
-            score_history.append(np.mean(np.array(val_scores)))
+            s = np.mean(np.array(val_scores))
+            score_history.append(s)
+
+            if best_val < s:  # if improve
+                best_val = s
+                best_itr = iteration
+                torch.save(model, "pretrained_model/best_model.pth")
+            print("Current best val score: {} at itr{}".format(best_val, best_itr))
             print("====================")
             print("== End validation ==")
             print("====================")
 
-        if iteration % 100000 == 0:
+        if iteration % SAVE_MODEL_PERIOD == 0:
             torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
 
-        if iteration % 1000 == 0:
-            with open('loss_hist/loss_history_%d.pickle' % iteration, 'wb') as handle:
+        if iteration % SAVE_HISTORY_PERIOD == 0:
+            with open('loss_hist/loss_history.pickle', 'wb') as handle:
                 pickle.dump(loss_history, handle)
-
-            with open('score_hist/score_history_%d.pickle' % iteration, 'wb') as handle:
+            with open('score_hist/score_history.pickle', 'wb') as handle:
                 pickle.dump(score_history, handle)
 
         print("Iter{}:: epsilon:{:<8.3}, action:{}, "
@@ -268,10 +293,10 @@ def test(model, num_iter=1):
 
         # set state to be state_1
         state = state_1
-        if iteration % 10 == 0:
+        if iteration % 50 == 0:
             print("Test:: itr: {}, score: {}".format(iteration, score))
 
-        if terminal:
+        if terminal or iteration > TEST_UPPER_SCORE:
             iteration = 0
             scores.append(pre_score)
             game_cnt += 1

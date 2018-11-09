@@ -9,9 +9,9 @@ DISPLAY = False
 TXT_DISPLAY = False
 
 # included element
-CLOUD = True
-SCOREBOARD = True
-GROUND = True
+CLOUD = False
+SCOREBOARD = False
+GROUND = False
 PTERA = False
 HIGHSCOREBOARD = False
 
@@ -19,9 +19,14 @@ HIGHSCOREBOARD = False
 SPEEDUP = False
 
 # reward
-SUCCESS_REWARD = 5
+# SUCCESS_REWARD = 5
+# ALIVE_REWARD = 1
+# JUMP_REWARD = -1
+# DEAD_REWARD = -10
+
+SUCCESS_REWARD = 10
 ALIVE_REWARD = 1
-JUMP_REWARD = -1
+JUMP_REWARD = 0
 DEAD_REWARD = -10
 
 
@@ -35,7 +40,8 @@ gravity = 0.6
 
 black = (0,0,0)
 white = (255,255,255)
-background_col = (235,235,235)
+# background_col = (235,235,235)
+background_col = (0,0,0)
 high_score = 0
 
 screen = pygame.display.set_mode(scr_size)

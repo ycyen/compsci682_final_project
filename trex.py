@@ -6,7 +6,7 @@ from pygame import *
 
 # display option
 DISPLAY = False
-TXT_DISPLAY = False
+TXT_DISPLAY = True
 
 # included element
 CLOUD = False
@@ -387,19 +387,23 @@ class GameState:
                     self.playerDino.isDead = True
 
         # This block is for adding cacti
-        if len(self.cacti) < 2:
-            if len(self.cacti) == 0:
-                self.cacti.empty()
-                self.cacti.add(Cactus(self.gamespeed,40,40))
-            else:
-                for c in self.cacti:
-                    if c.rect.right < width*0.7 and random.randrange(0,50) == 10:
-                        # self.cacti.empty()
-                        self.cacti.add(Cactus(self.gamespeed, 40, 40))
+        if len(self.cacti) == 0:
+            self.cacti.empty()
+            self.cacti.add(Cactus(self.gamespeed, 40, 40))
+
+        # if len(self.cacti) < 1:
+        #     if len(self.cacti) == 0:
+        #         self.cacti.empty()
+        #         self.cacti.add(Cactus(self.gamespeed,40,40))
+        #     else:
+        #         for c in self.cacti:
+        #             if c.rect.right < width*0.7 and random.randrange(0,50) == 10:
+        #                 # self.cacti.empty()
+        #                 self.cacti.add(Cactus(self.gamespeed, 40, 40))
 
         # For debug cacti
         if TXT_DISPLAY:
-            print("Dino: ", self.playerDino.rect)
+            # print("Dino: ", self.playerDino.rect)
             for c in self.cacti:
                 print("cacti: ", c.rect)
 

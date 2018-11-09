@@ -30,6 +30,11 @@ tmux
 ctrl + B
 d
 ```
+#### Freeze current window and scroll (Use up/down to scroll)
+```
+ctrl + B
+[
+```
 #### check current windows running in the background
 ```
 tmux ls

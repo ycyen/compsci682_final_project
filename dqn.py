@@ -10,6 +10,7 @@ import time
 import os
 import sys
 import pickle
+import argparse
 from trex import GameState
 
 
@@ -278,8 +279,12 @@ def test(model, num_iter=1):
     return scores
 
 
-def main(mode):
-    if mode == 'test':
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", help="either teat/train/keeptrain", default="test", type=str)
+    args = parser.parse_args()
+
+    if args.mode == 'test':
         model_path = 'current_model_2000000.pth'
         if torch.cuda.is_available():
             model = torch.load(model_path).eval()
@@ -288,7 +293,7 @@ def main(mode):
         if torch.cuda.is_available():  # put on GPU if CUDA is available
             model = model.cuda()
         test(model, float('inf'))
-    elif mode == 'train':
+    elif args.mode == 'train':
         if not os.path.exists('pretrained_model/'):
             os.mkdir('pretrained_model/')
         model = NeuralNetwork()
@@ -296,7 +301,7 @@ def main(mode):
             model = model.cuda()
         model.apply(init_weights)
         train(model)
-    elif mode == 'keeptrain':
+    elif args.mode == 'keeptrain':
         model_path = 'current_model_2000000.pth'
         if torch.cuda.is_available():  # put on GPU if CUDA is available
             model = torch.load(model_path).eval()
@@ -306,7 +311,9 @@ def main(mode):
             model = model.cuda()
         # model.conv1.weight.data.fill_(0.01)
         train(model)
+    else:
+        print("Mode: '{}' not supported".format(args.mode))
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main()

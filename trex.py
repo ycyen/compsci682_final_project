@@ -4,8 +4,20 @@ import pygame
 import random
 from pygame import *
 
-
+# display option
 DISPLAY = False
+TXT_DISPLAY = False
+
+# included element
+CLOUD = True
+SCOREBOARD = True
+PTERA = False
+HIGHSCOREBOARD = False
+
+# game setting
+SPEEDUP = False
+
+# reward
 SUCCESS_REWARD = 5
 ALIVE_REWARD = 1
 JUMP_REWARD = -1
@@ -300,17 +312,23 @@ class GameState:
         self.gamespeed = 4
         self.playerDino = Dino(44, 47)
         self.new_ground = Ground(-1 * self.gamespeed)
-        self.scb = Scoreboard()
-        self.highsc = Scoreboard(width * 0.78)
+        if SCOREBOARD:
+            self.scb = Scoreboard()
+        if HIGHSCOREBOARD:
+            self.highsc = Scoreboard(width * 0.78)
         self.counter = 0
 
         self.cacti = pygame.sprite.Group()
-        self.pteras = pygame.sprite.Group()
-        self.clouds = pygame.sprite.Group()
+        if PTERA:
+            self.pteras = pygame.sprite.Group()
+        if CLOUD:
+            self.clouds = pygame.sprite.Group()
 
         Cactus.containers = self.cacti
-        Ptera.containers = self.pteras
-        Cloud.containers = self.clouds
+        if PTERA:
+            Ptera.containers = self.pteras
+        if CLOUD:
+            Cloud.containers = self.clouds
 
         temp_images, temp_rect = load_sprite_sheet('numbers.png', 12, 1, 11, int(11 * 6 / 5), -1)
         HI_image = pygame.Surface((22, int(11 * 6 / 5)))
@@ -322,8 +340,7 @@ class GameState:
         HI_rect.top = height * 0.1
         HI_rect.left = width * 0.73
 
-
-    def frame_step(self, input_actions, debug=False):
+    def frame_step(self, input_actions):
         global high_score
         pygame.event.pump()
         terminal = False
@@ -346,23 +363,20 @@ class GameState:
             else:
                 def success_jump(dino, cacti):
                     left, top, w, h = dino.rect
-                    right = left + w
                     cleft, ctop, cw, ch = cacti.rect
                     cright = cleft + cw
-                    # if top + h > ctop and (cleft <= left <= cright or cleft <= right <= cright):
-                    #     return True
                     if left > cright and not c.passed:
                         c.passed = True
                         return True
                     return False
-
                 if success_jump(self.playerDino, c):
                     reward = SUCCESS_REWARD
 
-        # for p in self.pteras:
-        #     p.movement[0] = -1*self.gamespeed
-        #     if pygame.sprite.collide_mask(self.playerDino,p):
-        #         self.playerDino.isDead = True
+        if PTERA:
+            for p in self.pteras:
+                p.movement[0] = -1*self.gamespeed
+                if pygame.sprite.collide_mask(self.playerDino,p):
+                    self.playerDino.isDead = True
 
         # This block is for adding cacti
         if len(self.cacti) < 2:
@@ -376,41 +390,50 @@ class GameState:
                         self.cacti.add(Cactus(self.gamespeed, 40, 40))
 
         # For debug cacti
-        if debug:
-            pass
-            # print("Dino: ", self.playerDino.rect)
-            # for c in self.cacti:
-            #     print("cacti: ", c.rect)
+        if TXT_DISPLAY:
+            print("Dino: ", self.playerDino.rect)
+            for c in self.cacti:
+                print("cacti: ", c.rect)
 
-        # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
-        #     for l in self.last_obstacle:
-        #         if l.rect.right < width*0.8:
-        #             self.last_obstacle.empty()
-        #             self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
+        if PTERA:
+            # TODO: check if this work ...
+            if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
+                for l in self.last_obstacle:
+                    if l.rect.right < width*0.8:
+                        self.last_obstacle.empty()
+                        self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
 
-        if len(self.clouds) < 5 and random.randrange(0,300) == 10:
-            Cloud(width,random.randrange(height/5,height/2))
+        if CLOUD:
+            if len(self.clouds) < 5 and random.randrange(0,300) == 10:
+                Cloud(width,random.randrange(height/5,height/2))
 
 
         # List block will update every sprite
         self.playerDino.update()
         self.cacti.update()
-        # self.pteras.update()
-        self.clouds.update()
+        if PTERA:
+            self.pteras.update()
+        if CLOUD:
+            self.clouds.update()
         self.new_ground.update()
-        self.scb.update(self.playerDino.score)
-        self.highsc.update(high_score)
+        if SCOREBOARD:
+            self.scb.update(self.playerDino.score)
+        if HIGHSCOREBOARD:
+            self.highsc.update(high_score)
 
         if pygame.display.get_surface() != None:
             screen.fill(background_col)
             self.new_ground.draw()
-            self.clouds.draw(screen)
-            self.scb.draw()
-            # if high_score != 0:
-            #     self.highsc.draw()
-            #     screen.blit(HI_image,HI_rect)
+            if CLOUD:
+                self.clouds.draw(screen)
+            if SCOREBOARD:
+                self.scb.draw()
+            if HIGHSCOREBOARD and high_score != 0:
+                    self.highsc.draw()
+                    screen.blit(HI_image,HI_rect)
             self.cacti.draw(screen)
-            # self.pteras.draw(screen)
+            if PTERA:
+                self.pteras.draw(screen)
             self.playerDino.draw()
 
             pygame.display.update()
@@ -425,10 +448,11 @@ class GameState:
             self.__init__()
             reward = DEAD_REWARD
 
-        # This one will increase speed
-        # if self.counter%700 == 699:
-        #     self.new_ground.speed -= 1
-        #     self.gamespeed += 1
+        if SPEEDUP:
+            # This one will increase speed
+            if self.counter%700 == 699:
+                self.new_ground.speed -= 1
+                self.gamespeed += 1
 
         self.counter = (self.counter + 1)
 

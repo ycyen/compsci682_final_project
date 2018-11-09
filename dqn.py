@@ -22,7 +22,6 @@ class NeuralNetwork(nn.Module):
         self.final_epsilon = 0.0001
         self.initial_epsilon = 0.1
         self.number_of_iterations = 2000000
-        # self.number_of_iterations = 300
         self.replay_memory_size = 10000
         self.minibatch_size = 32
 
@@ -74,7 +73,7 @@ def resize_and_bgr2gray(image):
     return image_data
 
 
-def train(model, start):
+def train(model):
     if not os.path.exists('loss_hist'):
         os.makedirs('loss_hist')
     if not os.path.exists('score_hist'):
@@ -100,7 +99,7 @@ def train(model, start):
     # initial action is do nothing
     action = torch.zeros([model.number_of_actions], dtype=torch.float32)
     action[0] = 1
-    image_data, reward, terminal, _ = game_state.frame_step(action, debug=True)
+    image_data, reward, terminal, _ = game_state.frame_step(action)
     image_data = resize_and_bgr2gray(image_data)
     image_data = image_to_tensor(image_data)
     state = torch.cat((image_data, image_data, image_data, image_data)).unsqueeze(0)
@@ -135,15 +134,10 @@ def train(model, start):
         action[action_index] = 1
 
         # get next state and reward
-        image_data_1, reward, terminal, score = game_state.frame_step(action, debug=True)
+        image_data_1, reward, terminal, score = game_state.frame_step(action)
         image_data_1 = resize_and_bgr2gray(image_data_1)
         image_data_1 = image_to_tensor(image_data_1)
         state_1 = torch.cat((state.squeeze(0)[1:, :, :], image_data_1)).unsqueeze(0)
-
-        # if terminal:
-        #     # score_history.append(score)
-        #     print("score: ", score)
-
         action = action.unsqueeze(0)
         reward = torch.from_numpy(np.array([reward], dtype=np.float32)).unsqueeze(0)
 
@@ -212,9 +206,6 @@ def train(model, start):
             print("== End validation ==")
             print("====================")
 
-        # if iteration % 25000 == 0:
-        #     torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
-
         if iteration % 100000 == 0:
             torch.save(model, "pretrained_model/current_model_" + str(iteration) + ".pth")
 
@@ -225,9 +216,8 @@ def train(model, start):
             with open('score_hist/score_history_%d.pickle' % iteration, 'wb') as handle:
                 pickle.dump(score_history, handle)
 
-        print("Iter{}:: timeUsed:{:<8.3}, epsilon:{:<8.3}, action:{}, "
+        print("Iter{}:: epsilon:{:<8.3}, action:{}, "
               "reward:{:4}, score:{:4}, Q max:{:<8.3}".format(iteration,
-                                                  time.time() - start,
                                                   epsilon,
                                                   action_index.cpu().detach().numpy(),
                                                   reward.numpy()[0][0],
@@ -290,7 +280,7 @@ def test(model, num_iter=1):
 
 def main(mode):
     if mode == 'test':
-        model_path = 'my_current_model_200000.pth'
+        model_path = 'current_model_2000000.pth'
         if torch.cuda.is_available():
             model = torch.load(model_path).eval()
         else:
@@ -305,8 +295,7 @@ def main(mode):
         if torch.cuda.is_available():  # put on GPU if CUDA is available
             model = model.cuda()
         model.apply(init_weights)
-        start = time.time()
-        train(model, start)
+        train(model)
     elif mode == 'keeptrain':
         model_path = 'current_model_2000000.pth'
         if torch.cuda.is_available():  # put on GPU if CUDA is available
@@ -316,8 +305,7 @@ def main(mode):
         if torch.cuda.is_available():
             model = model.cuda()
         # model.conv1.weight.data.fill_(0.01)
-        start = time.time()
-        train(model, start)
+        train(model)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ import sys
 import pickle
 import argparse
 from trex import GameState
+from utils import save_image
 
 
 class NeuralNetwork(nn.Module):
@@ -67,9 +68,11 @@ def image_to_tensor(image):
 
 
 def resize_and_bgr2gray(image):
-    image = image[0:600, 0:150]
+    # image = image[0:600, 0:150]  # original
+    image = image[0:450, 0:150]  # only use a portion of it
     image_data = cv2.cvtColor(cv2.resize(image, (84, 84)), cv2.COLOR_BGR2GRAY)
     # image_data[image_data > 0] = 255
+    # save_image(image_data, 'tmp.png')
     image_data = np.reshape(image_data, (84, 84, 1))
     return image_data
 

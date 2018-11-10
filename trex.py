@@ -6,7 +6,7 @@ from pygame import *
 import numpy as np
 
 # display option
-DISPLAY = True
+DISPLAY = False
 TXT_DISPLAY = True
 
 # included element
@@ -14,7 +14,7 @@ CLOUD = False
 SCOREBOARD = True
 GROUND = False
 PTERA = True
-CACTUS = True
+CACTUS = False
 HIGHSCOREBOARD = False
 
 # game setting
@@ -382,6 +382,7 @@ class GameState:
                 self.playerDino.isDucking = True
 
 
+
         if CACTUS:
             for c in self.cacti:
                 c.movement[0] = -1*self.gamespeed
@@ -443,32 +444,32 @@ class GameState:
 
         # For debug cacti
         if TXT_DISPLAY:
-            print("Dino: ", self.playerDino.rect)
-            for c in self.cacti:
-                print("cacti: ", c.rect)
+            # print("Dino: ", self.playerDino.rect)
+            # for c in self.cacti:
+            #     print("cacti: ", c.rect)
             for p in self.pteras:
                 print("ptera: ", p.rect)
 
         if PTERA:
             # TODO: check if this work ...
-            if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
-                for l in self.last_obstacle:
-                    if l.rect.right < width*0.8: # 0.8
-                        self.last_obstacle.empty()
-                        self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
+            # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
+            #     for l in self.last_obstacle:
+            #         if l.rect.right < width*0.8: # 0.8
+            #             self.last_obstacle.empty()
+            #             self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
 
             # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
             #     self.pteras.add(Ptera(self.gamespeed, 46, 40))
 
-            # if len(self.pteras) < 2:
-            #     if len(self.pteras) == 0:
-            #         self.pteras.empty()
-            #         self.pteras.add(Ptera(self.gamespeed,46,64))
-            #     else:
-            #         for p in self.pteras:
-            #             if p.rect.right < width*0.7 and random.randrange(0,50) == 10:
-            #                 # self.cacti.empty()
-            #                 self.pteras.add(Ptera(self.gamespeed, 46, 64))
+            if len(self.pteras) < 2:
+                if len(self.pteras) == 0:
+                    self.pteras.empty()
+                    self.pteras.add(Ptera(self.gamespeed,46,40))
+                else:
+                    for p in self.pteras:
+                        if p.rect.right < width*0.7 and random.randrange(0,50) == 10:
+                            # self.cacti.empty()
+                            self.pteras.add(Ptera(self.gamespeed, 46, 40))
 
         # For debug cacti
         if TXT_DISPLAY:

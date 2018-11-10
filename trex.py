@@ -7,7 +7,7 @@ import numpy as np
 
 # display option
 DISPLAY = False
-TXT_DISPLAY = False
+TXT_DISPLAY = True
 
 # included element
 CLOUD = False
@@ -433,27 +433,29 @@ class GameState:
         if CACTUS:
             if len(self.cacti) < 2:
                 if len(self.cacti) == 0:
-                    self.last_obstacle.empty()
-                    self.last_obstacle.add(Cactus(self.gamespeed,40,40))
+                    self.cacti.empty()
+                    self.cacti.add(Cactus(self.gamespeed,40,40))
                 else:
-                    for l in self.last_obstacle:
-                        if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
-                            self.last_obstacle.empty()
-                            self.last_obstacle.add(Cactus(self.gamespeed, 40, 40))
+                    for c in self.cacti:
+                        if c.rect.right < width*0.7 and random.randrange(0,50) == 10:
+                            # self.cacti.empty()
+                            self.cacti.add(Cactus(self.gamespeed, 40, 40))
 
         # For debug cacti
         if TXT_DISPLAY:
             print("Dino: ", self.playerDino.rect)
             for c in self.cacti:
                 print("cacti: ", c.rect)
+            for p in self.pteras:
+                print("ptera: ", p.rect)
 
         if PTERA:
             # TODO: check if this work ...
             if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
-                for l in self.last_obstacle:
-                    if l.rect.right < width*0.8:
-                        self.last_obstacle.empty()
-                        self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
+                for c in self.cacti:
+                    if c.rect.right < width*0.8:
+                        # self.last_obstacle.empty()
+                        self.pteras.add(Ptera(self.gamespeed, 46, 40))
 
             # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
             #     self.pteras.add(Ptera(self.gamespeed, 46, 40))

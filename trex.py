@@ -6,7 +6,7 @@ from pygame import *
 import numpy as np
 
 # display option
-DISPLAY = False
+DISPLAY = True
 TXT_DISPLAY = True
 
 # included element
@@ -433,13 +433,13 @@ class GameState:
         if CACTUS:
             if len(self.cacti) < 2:
                 if len(self.cacti) == 0:
-                    self.cacti.empty()
-                    self.cacti.add(Cactus(self.gamespeed,40,40))
+                    self.last_obstacle.empty()
+                    self.last_obstacle.add(Cactus(self.gamespeed,40,40))
                 else:
-                    for c in self.cacti:
-                        if c.rect.right < width*0.7 and random.randrange(0,50) == 10:
-                            # self.cacti.empty()
-                            self.cacti.add(Cactus(self.gamespeed, 40, 40))
+                    for l in self.last_obstacle:
+                        if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
+                            self.last_obstacle.empty()
+                            self.last_obstacle.add(Cactus(self.gamespeed,40,40))
 
         # For debug cacti
         if TXT_DISPLAY:
@@ -452,10 +452,10 @@ class GameState:
         if PTERA:
             # TODO: check if this work ...
             if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
-                for c in self.cacti:
-                    if c.rect.right < width*0.8:
-                        # self.last_obstacle.empty()
-                        self.pteras.add(Ptera(self.gamespeed, 46, 40))
+                for l in self.last_obstacle:
+                    if l.rect.right < width*0.8: # 0.8
+                        self.last_obstacle.empty()
+                        self.last_obstacle.add(Ptera(self.gamespeed, 46, 40))
 
             # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
             #     self.pteras.add(Ptera(self.gamespeed, 46, 40))

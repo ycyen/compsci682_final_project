@@ -17,6 +17,8 @@ from utils import save_image
 # const
 SAVE_MODEL_PERIOD = 100000
 SAVE_HISTORY_PERIOD = 1000
+NUMBER_OF_TRAIN_ITER = 1000000
+
 
 VALID_PERIOD = 1000
 NUM_VALID = 5
@@ -29,18 +31,17 @@ BWIMG = True
 SAVE_DEBUG_IMAGE = False
 
 
+# Globel best score
 best_val = 0
 best_itr = -1
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super(NeuralNetwork, self).__init__()
-
         self.number_of_actions = 3
         self.gamma = 0.99
         self.final_epsilon = 0.0001
         self.initial_epsilon = 0.1
-        self.number_of_iterations = 2000000
         self.replay_memory_size = 10000
         self.minibatch_size = 32
 
@@ -53,6 +54,9 @@ class NeuralNetwork(nn.Module):
         self.fc4 = nn.Linear(3136, 512)
         self.relu4 = nn.ReLU(inplace=True)
         self.fc5 = nn.Linear(512, self.number_of_actions)
+
+        # TODO: save iteration num for future training
+
 
     def forward(self, x):
         out = self.conv1(x)
@@ -134,10 +138,10 @@ def train(model):
     epsilon = model.initial_epsilon
     iteration = 0
 
-    epsilon_decrements = np.linspace(model.initial_epsilon, model.final_epsilon, model.number_of_iterations)
+    epsilon_decrements = np.linspace(model.initial_epsilon, model.final_epsilon, NUMBER_OF_TRAIN_ITER)
 
     # main infinite loop
-    while iteration < model.number_of_iterations:
+    while iteration < NUMBER_OF_TRAIN_ITER:
         # get output from the neural network
         output = model(state)[0]
 

@@ -15,11 +15,13 @@ from trex import GameState
 from utils import save_image
 
 # const
-VALID_PERIOD = 1000
 SAVE_MODEL_PERIOD = 100000
 SAVE_HISTORY_PERIOD = 1000
-TEST_PRINT_PERIOD = 50
-TEST_UPPER_SCORE = 10000000
+
+VALID_PERIOD = 1000
+NUM_VALID = 5
+VALID_PRINT_PERIOD = 50
+VALID_UPPER_SCORE = 10000000
 X_CROP_SIZE = 450
 
 
@@ -224,7 +226,7 @@ def train(model):
             print("====================")
             print("== Run validation ==")
             print("====================")
-            val_scores = test(model, num_iter=1)
+            val_scores = test(model, num_test=NUM_VALID)
             s = np.mean(np.array(val_scores))
             score_history.append(s)
 
@@ -232,7 +234,7 @@ def train(model):
                 best_val = s
                 best_itr = iteration
                 torch.save(model, "pretrained_model/best_model.pth")
-            print("Current best val score: {} at itr{}".format(best_val, best_itr))
+            print("Current best val score (mean for {} tests): {} at itr{}".format(NUM_VALID, best_val, best_itr))
             print("====================")
             print("== End validation ==")
             print("====================")
@@ -255,7 +257,7 @@ def train(model):
                                                   np.max(output.cpu().detach().numpy())))
 
 
-def test(model, num_iter=1):
+def test(model, num_test=1):
     game_state = GameState()
 
     # initial action is do nothing
@@ -294,16 +296,17 @@ def test(model, num_iter=1):
 
         # set state to be state_1
         state = state_1
-        if iteration % TEST_PRINT_PERIOD == 0:
+        if iteration % VALID_PRINT_PERIOD == 0:
             print("Test:: itr: {}, score: {}".format(iteration, score))
 
-        if terminal or score > TEST_UPPER_SCORE:
+        if terminal or score > VALID_UPPER_SCORE:
             iteration = 0
             scores.append(pre_score)
             game_cnt += 1
             print("Test:: End of Game {}, score: {}\n".format(game_cnt, pre_score))
-        if game_cnt > num_iter:
-            break
+
+            if game_cnt > num_test:
+                break
         pre_score = score
     return scores
 

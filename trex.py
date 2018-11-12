@@ -17,9 +17,6 @@ PTERA = True
 CACTUS = True
 HIGHSCOREBOARD = False
 
-# game setting
-SPEEDUP = False
-
 # reward
 # SUCCESS_REWARD = 5
 # ALIVE_REWARD = 1
@@ -32,6 +29,11 @@ ALIVE_REWARD = 1
 JUMP_REWARD = 0
 DUCKING_REWARD = 0
 DEAD_REWARD = -10
+
+
+# PYGAME
+PTERA_HEIGHT = 62
+SPEEDUP = False
 
 
 if not DISPLAY:
@@ -426,11 +428,8 @@ class GameState:
                     if success_jump_p(self.playerDino, p):
                         reward = SUCCESS_JUMP
 
-        # # Adding single cacti
-        # if len(self.cacti) == 0 and random.randrange(0,50) == 10:
-        #     self.cacti.empty()
-        #     self.cacti.add(Cactus(self.gamespeed, 40, 40))
-        if CACTUS:
+        # Generate cactus
+        if CACTUS and PTERA:
             if len(self.cacti) < 2:
                 if len(self.cacti) == 0:
                     if len(self.pteras) == 0:
@@ -452,42 +451,49 @@ class GameState:
                                     if p.rect.right < width*0.7:
                                         # self.cacti.empty()
                                         self.cacti.add(Cactus(self.gamespeed, 40, 40))
+        elif CACTUS and not PTERA:
+            if len(self.cacti) < 2:
+                if len(self.cacti) == 0:
+                    self.cacti.empty()
+                    self.cacti.add(Cactus(self.gamespeed, 40, 40))
+                else:
+                    for p in self.cacti:
+                        if p.rect.right < width * 0.7 and random.randrange(0, 50) == 10:
+                            # self.cacti.empty()
+                            self.cacti.add(Cactus(self.gamespeed, 40, 40))
 
-        if PTERA:
+
+        # Generate bird
+        if PTERA and CACTUS:
             if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
+                last_cacti_right = 0
                 for c in self.cacti:
-                    if c.rect.right < width*0.7:
-                        # self.last_obstacle.empty()
-                        self.pteras.empty()
-                        self.pteras.add(Ptera(self.gamespeed, 46, 40))
-                        break
+                    last_cacti_right = max(last_cacti_right, c.rect.right)
+                if last_cacti_right < width*0.7:
+                    self.pteras.empty()
+                    self.pteras.add(Ptera(self.gamespeed, 46, PTERA_HEIGHT))
+        elif PTERA and not CACTUS:
+            if len(self.pteras) < 2:
+                if len(self.pteras) == 0:
+                    self.pteras.empty()
+                    self.pteras.add(Ptera(self.gamespeed,46,PTERA_HEIGHT))
+                else:
+                    for p in self.pteras:
+                        if p.rect.right < width*0.7 and random.randrange(0,50) == 10:
+                            # self.cacti.empty()
+                            self.pteras.add(Ptera(self.gamespeed, 46, PTERA_HEIGHT))
+
 
         # For debug cacti
         if TXT_DISPLAY:
             print("Dino: ", self.playerDino.rect)
-            for c in self.cacti:
-                print("cacti: ", c.rect)
-            for p in self.pteras:
-                print("ptera: ", p.rect)
+            if CACTUS:
+                for c in self.cacti:
+                    print("cacti: ", c.rect)
+            if PTERA:
+                for p in self.pteras:
+                    print("ptera: ", p.rect)
 
-        # if len(self.pteras) == 0 and random.randrange(0,200) == 10 and self.counter > 500:
-        #     self.pteras.add(Ptera(self.gamespeed, 46, 40))
-
-        # if len(self.pteras) < 2:
-        #     if len(self.pteras) == 0:
-        #         self.pteras.empty()
-        #         self.pteras.add(Ptera(self.gamespeed,46,64))
-        #     else:
-        #         for p in self.pteras:
-        #             if p.rect.right < width*0.7 and random.randrange(0,50) == 10:
-        #                 # self.cacti.empty()
-        #                 self.pteras.add(Ptera(self.gamespeed, 46, 64))
-
-        # For debug cacti
-        if TXT_DISPLAY:
-            # print("Dino: ", self.playerDino.rect)
-            for p in self.pteras:
-                print("ptera: ", p.rect)
 
         if CLOUD:
             if len(self.clouds) < 5 and random.randrange(0,300) == 10:
@@ -559,19 +565,24 @@ def gameplay():
     action[0] = 1
     game_state.frame_step(action)
 
+    duck = False
     while True:
+        jump = False
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:  # press something
-                if event.key == pygame.K_SPACE:  # press space
-                    action = [0, 0, 0]
-                    action[1] = 1
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    jump = True
+                    action = [0, 1, 0]
                     game_state.frame_step(action)
                 if event.key == pygame.K_DOWN:
-                    action = [0, 0, 0]
-                    action[2] = 1
-                    game_state.frame_step(action)
-        action = [0, 0, 0]
-        action[0] = 1
+                    duck = True
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_DOWN:
+                    duck = False
+        if not jump and duck:
+            action = [0, 0, 1]
+        else:
+            action = [1, 0, 0]
         game_state.frame_step(action)
 
 

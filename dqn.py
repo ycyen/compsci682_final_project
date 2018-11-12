@@ -227,14 +227,14 @@ def train(model):
             print("== Run validation ==")
             print("====================")
             val_scores = test(model, num_test=NUM_VALID)
-            s = np.mean(np.array(val_scores))
-            score_history.append(s)
+            score_history.append(val_scores)
 
+            s = np.max(np.array(val_scores))
             if best_val < s:  # if improve
                 best_val = s
                 best_itr = iteration
                 torch.save(model, "pretrained_model/best_model.pth")
-            print("Current best val score (mean for {} tests): {} at itr{}".format(NUM_VALID, best_val, best_itr))
+            print("Current best val score (max in {} tests): {} at itr{}".format(NUM_VALID, best_val, best_itr))
             print("====================")
             print("== End validation ==")
             print("====================")
@@ -302,9 +302,8 @@ def test(model, num_test=1):
         if terminal or score > VALID_UPPER_SCORE:
             iteration = 0
             scores.append(pre_score)
-            game_cnt += 1
             print("Test:: End of Game {}, score: {}\n".format(game_cnt, pre_score))
-
+            game_cnt += 1
             if game_cnt > num_test:
                 break
         pre_score = score

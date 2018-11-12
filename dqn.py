@@ -310,6 +310,7 @@ def test(model, num_test=1):
             game_cnt += 1
             if game_cnt > num_test:
                 break
+            game_state.__init__()
         pre_score = score
     return scores
 

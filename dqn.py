@@ -19,7 +19,7 @@ VALID_PERIOD = 1000
 SAVE_MODEL_PERIOD = 100000
 SAVE_HISTORY_PERIOD = 1000
 TEST_PRINT_PERIOD = 50
-TEST_UPPER_SCORE = 10000
+TEST_UPPER_SCORE = 10000000
 X_CROP_SIZE = 450
 
 
@@ -297,7 +297,7 @@ def test(model, num_iter=1):
         if iteration % TEST_PRINT_PERIOD == 0:
             print("Test:: itr: {}, score: {}".format(iteration, score))
 
-        if terminal or iteration > TEST_UPPER_SCORE:
+        if terminal or score > TEST_UPPER_SCORE:
             iteration = 0
             scores.append(pre_score)
             game_cnt += 1

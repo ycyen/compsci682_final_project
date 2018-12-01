@@ -40,10 +40,20 @@ def draw_score(dir):
     plt.ylabel("score")
     plt.show()
 
+def draw_test_score(dir):
+    test_score = load_pickle(dir)
+
+    print(np.mean(test_score))
+
+    plt.scatter(np.arange(len(test_score)), test_score)
+    plt.xlabel("num of game")
+    plt.ylabel("score")
+    plt.show()
+
 
 def main(argv):
     args = parser.parse_args(argv)
-    ###### python3 history.py -dir FILE_DIRECTORY
+    ###### python3 history.py --dir FILE_DIRECTORY
 
 
     ###### merge two history ######
@@ -53,8 +63,11 @@ def main(argv):
 
 
     ###### draw history ######
+    draw_score(args.dir + "test_score_best_model.pickle")
+    draw_score(args.dir + "test_score_current_model_2000000.pickle")
     # draw_score(args.dir + "score_history.pickle")
-    draw_loss(args.dir + "loss_history.pickle")
+    # draw_loss(args.dir + "loss_history.pickle")
+    # draw_test_score(args.dir + "test_score.pickle")
 
 
 if __name__ == "__main__":

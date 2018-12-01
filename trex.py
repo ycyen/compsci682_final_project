@@ -7,7 +7,7 @@ import numpy as np
 
 # display option
 DISPLAY = False
-TXT_DISPLAY = True
+TXT_DISPLAY = False
 
 # included element
 CLOUD = False

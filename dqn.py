@@ -261,7 +261,7 @@ def train(model):
                                                   np.max(output.cpu().detach().numpy())))
 
 
-def test(model, num_test=1):
+def test(model, num_test=10):
     game_state = GameState()
 
     # initial action is do nothing
@@ -300,8 +300,8 @@ def test(model, num_test=1):
 
         # set state to be state_1
         state = state_1
-        if iteration % VALID_PRINT_PERIOD == 0:
-            print("Test:: itr: {}, score: {}".format(iteration, score))
+        # if iteration % VALID_PRINT_PERIOD == 0:
+            # print("Test:: itr: {}, score: {}".format(iteration, score))
 
         if terminal or score > VALID_UPPER_SCORE:
             iteration = 0
@@ -312,6 +312,13 @@ def test(model, num_test=1):
                 break
             game_state.__init__()
         pre_score = score
+
+    if not os.path.exists("test_scores/"):
+        os.makedirs("test_scores")
+
+    with open('test_scores/test_score.pickle', 'wb') as handle:
+        pickle.dump(scores, handle)
+
     return scores
 
 
@@ -329,7 +336,8 @@ def main():
             model = torch.load(args.model, map_location='cpu').eval()
         if torch.cuda.is_available():  # put on GPU if CUDA is available
             model = model.cuda()
-        test(model, float('inf'))
+        # test(model, float('inf'))
+        test(model)
 
     elif args.mode == 'train':
         if not os.path.exists('pretrained_model/'):

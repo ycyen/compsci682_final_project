@@ -24,6 +24,7 @@ def merge(np1, np2, file_name): # merge two numpy array
     with open(file_name, 'wb') as handle:
         pickle.dump(file, handle)
 
+
 def draw_loss(dir):
     loss_hist = load_pickle(dir)
 
@@ -63,10 +64,10 @@ def main(argv):
 
 
     ###### draw history ######
-    draw_score(args.dir + "test_score_best_model.pickle")
-    draw_score(args.dir + "test_score_current_model_2000000.pickle")
+    # draw_score(args.dir + "test_score_best_model.pickle")
+    # draw_score(args.dir + "test_score_current_model_2000000.pickle")
     # draw_score(args.dir + "score_history.pickle")
-    # draw_loss(args.dir + "loss_history.pickle")
+    draw_loss(args.dir + "loss_history.pickle")
     # draw_test_score(args.dir + "test_score.pickle")
 
 
